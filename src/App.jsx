@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useRef } from 'react'
 import { motion } from 'framer-motion'
 import {
   Mail,
@@ -15,6 +15,14 @@ const demoUser = {
   password: 'demo',
   email: 'demo@example.com',
   phone: '0000000000'
+}
+
+const adminUser = {
+  username: 'admin',
+  password: 'admin',
+  email: 'admin@example.com',
+  phone: '0000000000',
+  role: 'admin'
 }
 
 const projects = [
@@ -103,11 +111,257 @@ function App() {
   const [users, setUsers] = useState([])
   const [loginData, setLoginData] = useState({ username: '', password: '' })
   const [signupData, setSignupData] = useState({ username: '', email: '', phone: '', password: '' })
+  const [mediaItems, setMediaItems] = useState([])
+  const [mediaForm, setMediaForm] = useState({ type: 'video', title: '', description: '' })
+  const [mediaError, setMediaError] = useState('')
+  const [mediaMessage, setMediaMessage] = useState('')
+  const [recording, setRecording] = useState(false)
+  const [mediaStream, setMediaStream] = useState(null)
+  const [mediaRecorder, setMediaRecorder] = useState(null)
+  const [recordedChunks, setRecordedChunks] = useState([])
+  const [previewUrl, setPreviewUrl] = useState('')
+  const [videoUploads, setVideoUploads] = useState([])
+  const [audioUploads, setAudioUploads] = useState([])
+  const [combineStatus, setCombineStatus] = useState('')
+  const [combineError, setCombineError] = useState('')
+  const [combinedUrl, setCombinedUrl] = useState('')
+  const [combinedName, setCombinedName] = useState('combined_video')
+  const [ffmpegInstance, setFfmpegInstance] = useState(null)
+  const [ffmpegLoading, setFfmpegLoading] = useState(false)
+  const videoRef = useRef(null)
+
+  const getMediaDuration = (file, type) => {
+    return new Promise((resolve) => {
+      const element = document.createElement(type)
+      element.preload = 'metadata'
+      element.src = URL.createObjectURL(file)
+      element.onloadedmetadata = () => {
+        const duration = element.duration || 0
+        URL.revokeObjectURL(element.src)
+        resolve(duration)
+      }
+      element.onerror = () => {
+        URL.revokeObjectURL(element.src)
+        resolve(0)
+      }
+    })
+  }
+
+  const handleVideoFiles = async (event) => {
+    const files = Array.from(event.target.files || [])
+    if (!files.length) return
+
+    const uploads = await Promise.all(files.map(async (file, index) => {
+      const duration = await getMediaDuration(file, 'video')
+      return {
+        id: `${Date.now()}-${index}`,
+        file,
+        name: file.name,
+        duration,
+        start: 0,
+        end: duration,
+        url: URL.createObjectURL(file)
+      }
+    }))
+
+    setVideoUploads((prev) => [...prev, ...uploads])
+    setCombineStatus(`Added ${uploads.length} video segment(s).`)
+    event.target.value = null
+  }
+
+  const handleAudioFiles = async (event) => {
+    const files = Array.from(event.target.files || [])
+    if (!files.length) return
+
+    const uploads = await Promise.all(files.map(async (file, index) => {
+      const duration = await getMediaDuration(file, 'audio')
+      return {
+        id: `${Date.now()}-${index}`,
+        file,
+        name: file.name,
+        duration,
+        insertAt: 0,
+        url: URL.createObjectURL(file)
+      }
+    }))
+
+    setAudioUploads((prev) => [...prev, ...uploads])
+    setCombineStatus(`Added ${uploads.length} audio track(s).`)
+    event.target.value = null
+  }
+
+  const updateVideoSegment = (id, field, value) => {
+    setVideoUploads((prev) => prev.map((segment) => (
+      segment.id === id ? { ...segment, [field]: Number(value) } : segment
+    )))
+  }
+
+  const updateAudioTrack = (id, field, value) => {
+    setAudioUploads((prev) => prev.map((track) => (
+      track.id === id ? { ...track, [field]: Number(value) } : track
+    )))
+  }
+
+  const removeVideoSegment = (id) => {
+    setVideoUploads((prev) => {
+      const segment = prev.find((item) => item.id === id)
+      if (segment?.url) URL.revokeObjectURL(segment.url)
+      return prev.filter((item) => item.id !== id)
+    })
+  }
+
+  const removeAudioTrack = (id) => {
+    setAudioUploads((prev) => {
+      const track = prev.find((item) => item.id === id)
+      if (track?.url) URL.revokeObjectURL(track.url)
+      return prev.filter((item) => item.id !== id)
+    })
+  }
+
+  const loadFfmpeg = async () => {
+    if (ffmpegInstance) return ffmpegInstance
+    setFfmpegLoading(true)
+    const { createFFmpeg, fetchFile } = await import('@ffmpeg/ffmpeg')
+    const ff = createFFmpeg({
+      log: true,
+      corePath: 'https://unpkg.com/@ffmpeg/core@0.11.4/dist/ffmpeg-core.js'
+    })
+    await ff.load()
+    ff.fetchFile = fetchFile
+    setFfmpegInstance(ff)
+    setFfmpegLoading(false)
+    return ff
+  }
+
+  const getSafeName = (file, prefix, index) => {
+    const safeBase = file.name.replace(/[^a-zA-Z0-9_.-]/g, '_')
+    return `${prefix}_${index}_${safeBase}`
+  }
+
+  const handleDownloadCombined = () => {
+    if (!combinedUrl) return
+    const link = document.createElement('a')
+    link.href = combinedUrl
+    link.download = `${combinedName.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.webm`
+    document.body.appendChild(link)
+    link.click()
+    link.remove()
+  }
+
+  const combineMedia = async () => {
+    setCombineError('')
+    setCombineStatus('Preparing media files...')
+    if (!videoUploads.length) {
+      setCombineError('Upload at least one video to combine.')
+      return
+    }
+
+    try {
+      const ff = await loadFfmpeg()
+      const trimmedFiles = []
+
+      for (let index = 0; index < videoUploads.length; index += 1) {
+        const segment = videoUploads[index]
+        const sourceName = getSafeName(segment.file, 'video', index)
+        ff.FS('writeFile', sourceName, await ff.fetchFile(segment.file))
+
+        const trimmedName = `trimmed_${index}.webm`
+        const start = Math.max(0, Math.min(segment.start, segment.duration))
+        const end = Math.max(start + 0.1, Math.min(segment.end, segment.duration))
+        const duration = end - start
+
+        await ff.run(
+          '-i', sourceName,
+          '-ss', `${start}`,
+          '-t', `${duration}`,
+          '-c:v', 'libvpx',
+          '-c:a', 'libopus',
+          trimmedName
+        )
+
+        trimmedFiles.push(trimmedName)
+      }
+
+      let mergedName = trimmedFiles[0]
+      if (trimmedFiles.length > 1) {
+        setCombineStatus('Concatenating trimmed clips...')
+        const inputArgs = trimmedFiles.flatMap((name) => ['-i', name])
+        const concatInputs = trimmedFiles.map((_, index) => `[${index}:v][${index}:a]`).join('')
+        const filterComplex = `${concatInputs}concat=n=${trimmedFiles.length}:v=1:a=1[outv][outa]`
+        mergedName = 'merged.webm'
+
+        await ff.run(
+          ...inputArgs,
+          '-filter_complex', filterComplex,
+          '-map', '[outv]',
+          '-map', '[outa]',
+          '-c:v', 'libvpx',
+          '-c:a', 'libopus',
+          mergedName
+        )
+      }
+
+      let finalName = mergedName
+      if (audioUploads.length) {
+        setCombineStatus('Mixing audio tracks into video...')
+        for (let index = 0; index < audioUploads.length; index += 1) {
+          const track = audioUploads[index]
+          const audioName = getSafeName(track.file, 'audio', index)
+          ff.FS('writeFile', audioName, await ff.fetchFile(track.file))
+        }
+
+        const audioInputs = audioUploads.flatMap((track, index) => ['-i', getSafeName(track.file, 'audio', index)])
+        const delayFilters = audioUploads.map((track, index) => {
+          return `[${index + 1}:a]adelay=${Math.round(track.insertAt * 1000)}:all=1[a${index}]`
+        })
+        const amixInputs = audioUploads.map((_, index) => `[a${index}]`).join('')
+        const filterComplex = `${delayFilters.join(';')};${amixInputs}amix=inputs=${audioUploads.length}:dropout_transition=0[mixout]`
+        const finalOutput = 'final_combined.webm'
+
+        await ff.run(
+          '-i', mergedName,
+          ...audioInputs,
+          '-filter_complex', filterComplex,
+          '-map', '0:v',
+          '-map', '[mixout]',
+          '-c:v', 'libvpx',
+          '-c:a', 'libopus',
+          '-shortest',
+          finalOutput
+        )
+        finalName = finalOutput
+      }
+
+      setCombineStatus('Reading merged output...')
+      const data = ff.FS('readFile', finalName)
+      const outputBlob = new Blob([data.buffer], { type: 'video/webm' })
+      const outputUrl = URL.createObjectURL(outputBlob)
+      setCombinedUrl((prev) => {
+        if (prev) URL.revokeObjectURL(prev)
+        return outputUrl
+      })
+      setCombineStatus('Combined video ready for download.')
+    } catch (error) {
+      console.error('FFmpeg combine error:', error)
+      setCombineError(`Unable to combine media: ${error?.message || 'Unknown error'}. Try simplifying uploads or refreshing the page.`)
+      setCombineStatus('')
+    }
+  }
+
+  useEffect(() => {
+    return () => {
+      videoUploads.forEach((segment) => segment.url && URL.revokeObjectURL(segment.url))
+      audioUploads.forEach((track) => track.url && URL.revokeObjectURL(track.url))
+      if (combinedUrl) URL.revokeObjectURL(combinedUrl)
+    }
+  }, [])
 
   useEffect(() => {
     const storedUsers = JSON.parse(localStorage.getItem('portfolioUsers') || '[]')
     const persistedUser = JSON.parse(localStorage.getItem('portfolioAuthUser') || 'null')
+    const storedMedia = JSON.parse(localStorage.getItem('portfolioMediaItems') || '[]')
     setUsers(storedUsers)
+    setMediaItems(storedMedia)
     if (persistedUser) {
       setUser(persistedUser)
       setActivePage('courses')
@@ -117,6 +371,10 @@ function App() {
   useEffect(() => {
     localStorage.setItem('portfolioUsers', JSON.stringify(users))
   }, [users])
+
+  useEffect(() => {
+    localStorage.setItem('portfolioMediaItems', JSON.stringify(mediaItems))
+  }, [mediaItems])
 
   useEffect(() => {
     if (user) {
@@ -140,6 +398,13 @@ function App() {
     setAuthError('')
     setAuthMessage('')
     const matchedUser = users.find((item) => item.username === loginData.username && item.password === loginData.password)
+
+    if (loginData.username === adminUser.username && loginData.password === adminUser.password) {
+      setUser(adminUser)
+      setActivePage('courses')
+      setAuthMessage('Welcome, admin! Create media from the courses page.')
+      return
+    }
 
     if (loginData.username === demoUser.username && loginData.password === demoUser.password) {
       setUser(demoUser)
@@ -169,8 +434,8 @@ function App() {
       return
     }
 
-    if (username === demoUser.username) {
-      setAuthError('The username demo is reserved. Choose another username.')
+    if (username === demoUser.username || username === adminUser.username) {
+      setAuthError('The username demo or admin is reserved. Choose another username.')
       return
     }
 
@@ -186,11 +451,94 @@ function App() {
   }
 
   const handleLogout = () => {
+    if (mediaStream) {
+      mediaStream.getTracks().forEach((track) => track.stop())
+      setMediaStream(null)
+    }
     setUser(null)
     setLoginData({ username: '', password: '' })
     setActivePage('home')
     setAuthView('login')
     setAuthMessage('You have been logged out.')
+  }
+
+  const getMediaStream = async () => {
+    try {
+      const constraints = mediaForm.type === 'audio' ? { audio: true, video: false } : { audio: true, video: true }
+      const stream = await navigator.mediaDevices.getUserMedia(constraints)
+      setMediaStream(stream)
+      if (videoRef.current && mediaForm.type === 'video') {
+        videoRef.current.srcObject = stream
+      }
+      return stream
+    } catch (err) {
+      setMediaError('Unable to access camera or microphone. Please allow access and try again.')
+      return null
+    }
+  }
+
+  const handleStartRecording = async () => {
+    setMediaError('')
+    setMediaMessage('')
+    const stream = mediaStream || await getMediaStream()
+    if (!stream) return
+
+    const mimeType = mediaForm.type === 'audio' ? 'audio/webm' : 'video/webm'
+    const options = MediaRecorder.isTypeSupported(mimeType) ? { mimeType } : {}
+    const recorder = new MediaRecorder(stream, options)
+    const chunks = []
+
+    recorder.ondataavailable = (event) => {
+      if (event.data && event.data.size > 0) {
+        chunks.push(event.data)
+      }
+    }
+
+    recorder.onstop = () => {
+      const blob = new Blob(chunks, { type: mimeType })
+      const blobUrl = URL.createObjectURL(blob)
+      const newMedia = {
+        id: Date.now(),
+        type: mediaForm.type,
+        title: mediaForm.title || `${mediaForm.type.charAt(0).toUpperCase() + mediaForm.type.slice(1)} recording`,
+        description: mediaForm.description,
+        createdAt: new Date().toISOString(),
+        blob,
+        blobUrl,
+        fileType: mediaForm.type === 'audio' ? 'webm' : 'webm'
+      }
+      setMediaItems((prev) => [newMedia, ...prev])
+      setMediaForm({ type: mediaForm.type, title: '', description: '' })
+      setMediaMessage(`${mediaForm.type === 'video' ? 'Video' : 'Audio'} recorded successfully.`)
+      setRecording(false)
+      setMediaRecorder(null)
+    }
+
+    recorder.start()
+    setRecordedChunks(chunks)
+    setMediaRecorder(recorder)
+    setRecording(true)
+    setMediaMessage('Recording started...')
+  }
+
+  const handleStopRecording = () => {
+    if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+      mediaRecorder.stop()
+    }
+    if (mediaStream) {
+      mediaStream.getTracks().forEach((track) => track.stop())
+      setMediaStream(null)
+    }
+    setRecording(false)
+  }
+
+  const handleDownloadMedia = (item) => {
+    const link = document.createElement('a')
+    link.href = item.blobUrl
+    link.download = `${item.title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_${item.type}.${item.fileType}`
+    document.body.appendChild(link)
+    link.click()
+    link.remove()
   }
 
   const coursesPage = (
@@ -297,6 +645,276 @@ function App() {
           </div>
         ) : (
           <div className="space-y-8">
+            {user?.username === 'admin' && (
+              <div className="glass-card p-8 border-white/10">
+                <h3 className="text-xl font-bold mb-4">Admin Media Recorder</h3>
+                {mediaError && <p className="mb-4 rounded-xl bg-red-500/10 px-4 py-3 text-sm text-red-300">{mediaError}</p>}
+                {mediaMessage && <p className="mb-4 rounded-xl bg-green-500/10 px-4 py-3 text-sm text-green-200">{mediaMessage}</p>}
+
+                <div className="grid gap-6 lg:grid-cols-[1.4fr_0.9fr]">
+                  <div>
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      <label className="block text-sm text-gray-200">
+                        Type
+                        <select
+                          value={mediaForm.type}
+                          onChange={(event) => setMediaForm({ ...mediaForm, type: event.target.value })}
+                          className="mt-2 w-full rounded-2xl border border-white/10 bg-black/40 px-4 py-3 text-white outline-none focus:border-primary-pink"
+                        >
+                          <option value="video">Video</option>
+                          <option value="audio">Audio</option>
+                        </select>
+                      </label>
+                      <label className="block text-sm text-gray-200">
+                        Title
+                        <input
+                          value={mediaForm.title}
+                          onChange={(event) => setMediaForm({ ...mediaForm, title: event.target.value })}
+                          className="mt-2 w-full rounded-2xl border border-white/10 bg-black/40 px-4 py-3 text-white outline-none focus:border-primary-pink"
+                          placeholder="Enter title"
+                        />
+                      </label>
+                      <label className="block text-sm text-gray-200 sm:col-span-2">
+                        Description
+                        <textarea
+                          value={mediaForm.description}
+                          onChange={(event) => setMediaForm({ ...mediaForm, description: event.target.value })}
+                          className="mt-2 w-full rounded-2xl border border-white/10 bg-black/40 px-4 py-3 text-white outline-none focus:border-primary-pink"
+                          placeholder="Describe your media recording"
+                          rows="4"
+                        />
+                      </label>
+                    </div>
+
+                    <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                      <button
+                        type="button"
+                        onClick={handleStartRecording}
+                        disabled={recording}
+                        className="rounded-full bg-primary-pink px-6 py-3 text-sm font-semibold text-black transition hover:bg-pink-400 disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        {recording ? 'Recording...' : `Start ${mediaForm.type === 'video' ? 'Video' : 'Audio'}`}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleStopRecording}
+                        disabled={!recording}
+                        className="rounded-full border border-white/10 bg-white/5 px-6 py-3 text-sm font-semibold text-white transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        Stop Recording
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="rounded-3xl border border-white/10 bg-black/30 p-4">
+                    <p className="text-sm text-gray-400 mb-3">Camera preview</p>
+                    {mediaForm.type === 'video' ? (
+                      <video
+                        ref={videoRef}
+                        className="h-full w-full rounded-3xl bg-black"
+                        autoPlay
+                        muted
+                        playsInline
+                      />
+                    ) : (
+                      <div className="flex h-full min-h-[220px] items-center justify-center rounded-3xl border border-dashed border-white/10 bg-white/5 p-4 text-sm text-gray-400">
+                        Audio mode has no camera preview.
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="mt-8 rounded-3xl border border-white/10 bg-black/30 p-6">
+                  <h4 className="text-lg font-semibold mb-4">Video editor</h4>
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <label className="block text-sm text-gray-200">
+                      Upload video segments
+                      <input
+                        type="file"
+                        accept="video/*"
+                        multiple
+                        onChange={handleVideoFiles}
+                        className="mt-2 w-full rounded-2xl border border-white/10 bg-black/40 px-4 py-3 text-white outline-none"
+                      />
+                    </label>
+                    <label className="block text-sm text-gray-200">
+                      Upload audio tracks
+                      <input
+                        type="file"
+                        accept="audio/*"
+                        multiple
+                        onChange={handleAudioFiles}
+                        className="mt-2 w-full rounded-2xl border border-white/10 bg-black/40 px-4 py-3 text-white outline-none"
+                      />
+                    </label>
+                  </div>
+
+                  {videoUploads.length > 0 && (
+                    <div className="mt-6 space-y-4">
+                      <h5 className="font-semibold text-white">Video segments</h5>
+                      {videoUploads.map((segment) => (
+                        <div key={segment.id} className="rounded-3xl border border-white/10 bg-white/5 p-4">
+                          <div className="flex flex-wrap justify-between gap-3">
+                            <div>
+                              <p className="text-sm uppercase text-primary-pink tracking-[0.2em]">Segment</p>
+                              <p className="font-semibold text-white">{segment.name}</p>
+                              <p className="text-gray-400 text-sm">Duration: {segment.duration.toFixed(1)}s</p>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => removeVideoSegment(segment.id)}
+                              className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-semibold text-white transition hover:bg-white/10"
+                            >
+                              Remove
+                            </button>
+                          </div>
+                          <div className="grid gap-4 sm:grid-cols-2 mt-4">
+                            <label className="text-sm text-gray-200">
+                              Start (sec)
+                              <input
+                                type="number"
+                                min="0"
+                                max={segment.duration}
+                                step="0.1"
+                                value={segment.start}
+                                onChange={(event) => updateVideoSegment(segment.id, 'start', event.target.value)}
+                                className="mt-2 w-full rounded-2xl border border-white/10 bg-black/40 px-4 py-3 text-white outline-none"
+                              />
+                            </label>
+                            <label className="text-sm text-gray-200">
+                              End (sec)
+                              <input
+                                type="number"
+                                min="0"
+                                max={segment.duration}
+                                step="0.1"
+                                value={segment.end}
+                                onChange={(event) => updateVideoSegment(segment.id, 'end', event.target.value)}
+                                className="mt-2 w-full rounded-2xl border border-white/10 bg-black/40 px-4 py-3 text-white outline-none"
+                              />
+                            </label>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {audioUploads.length > 0 && (
+                    <div className="mt-6 space-y-4">
+                      <h5 className="font-semibold text-white">Audio tracks</h5>
+                      {audioUploads.map((track) => (
+                        <div key={track.id} className="rounded-3xl border border-white/10 bg-white/5 p-4">
+                          <div className="flex flex-wrap justify-between gap-3">
+                            <div>
+                              <p className="text-sm uppercase text-primary-pink tracking-[0.2em]">Audio</p>
+                              <p className="font-semibold text-white">{track.name}</p>
+                              <p className="text-gray-400 text-sm">Length: {track.duration.toFixed(1)}s</p>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => removeAudioTrack(track.id)}
+                              className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-semibold text-white transition hover:bg-white/10"
+                            >
+                              Remove
+                            </button>
+                          </div>
+                          <label className="block text-sm text-gray-200 mt-4">
+                            Insert at (sec)
+                            <input
+                              type="number"
+                              min="0"
+                              step="0.1"
+                              value={track.insertAt}
+                              onChange={(event) => updateAudioTrack(track.id, 'insertAt', event.target.value)}
+                              className="mt-2 w-full rounded-2xl border border-white/10 bg-black/40 px-4 py-3 text-white outline-none"
+                            />
+                          </label>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  <div className="mt-6 grid gap-4 sm:grid-cols-[1fr_auto]">
+                    <label className="text-sm text-gray-200">
+                      Output file name
+                      <input
+                        value={combinedName}
+                        onChange={(event) => setCombinedName(event.target.value)}
+                        className="mt-2 w-full rounded-2xl border border-white/10 bg-black/40 px-4 py-3 text-white outline-none"
+                        placeholder="combined_video"
+                      />
+                    </label>
+                    <button
+                      type="button"
+                      onClick={combineMedia}
+                      disabled={ffmpegLoading}
+                      className="rounded-full bg-primary-pink px-6 py-3 text-sm font-semibold text-black transition hover:bg-pink-400 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      {ffmpegLoading ? 'Loading editor...' : 'Combine and Download'}
+                    </button>
+                  </div>
+
+                  {combineStatus && <p className="mt-4 text-sm text-green-200">{combineStatus}</p>}
+                  {combineError && <p className="mt-4 text-sm text-red-300">{combineError}</p>}
+
+                  {combinedUrl && (
+                    <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                      <a
+                        href={combinedUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="rounded-full border border-white/10 bg-white/5 px-5 py-3 text-sm font-semibold text-white transition hover:bg-white/10"
+                      >
+                        Preview combined video
+                      </a>
+                      <button
+                        type="button"
+                        onClick={handleDownloadCombined}
+                        className="rounded-full bg-primary-pink px-6 py-3 text-sm font-semibold text-black transition hover:bg-pink-400"
+                      >
+                        Download Combined Video
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                {mediaItems.length > 0 && (
+                  <div className="mt-8">
+                    <h4 className="text-lg font-semibold mb-6">Recorded Media</h4>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                      {mediaItems.map((item) => (
+                        <div key={item.id} className="rounded-3xl border border-white/10 bg-white/5 p-4">
+                          <div className="mb-3 rounded-3xl bg-black">
+                            {item.blobUrl && item.type === 'video' ? (
+                              <video controls src={item.blobUrl} className="h-36 w-full rounded-3xl object-cover" />
+                            ) : item.blobUrl && item.type === 'audio' ? (
+                              <div className="flex h-36 w-full items-center justify-center rounded-3xl bg-white/5 p-3">
+                                <audio controls src={item.blobUrl} className="w-full" />
+                              </div>
+                            ) : (
+                              <div className="h-36 w-full rounded-3xl bg-white/5" />
+                            )}
+                          </div>
+                          <div className="space-y-2">
+                            <p className="text-xs uppercase text-primary-pink tracking-[0.2em]">{item.type}</p>
+                            <h5 className="font-semibold text-white truncate">{item.title}</h5>
+                            <p className="text-gray-400 text-sm truncate">{item.description}</p>
+                            <p className="text-xs text-gray-500">{new Date(item.createdAt).toLocaleString()}</p>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => handleDownloadMedia(item)}
+                            className="mt-4 w-full rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/10"
+                          >
+                            Download {item.type}
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
             <div className="grid gap-6 lg:grid-cols-[2fr_1fr]">
               <div className="glass-card p-8 border-white/10">
                 <h3 className="text-xl font-bold mb-4">Your Courses</h3>
