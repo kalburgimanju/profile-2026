@@ -933,7 +933,7 @@ function App() {
                 <h3 className="text-xl font-bold mb-4">Access granted</h3>
                 <p className="text-gray-400 mb-6">This course library is locked behind authentication so only logged-in learners can view the embedded YouTube content.</p>
                 <a
-                  href="https://www.youtube.com/@stockmarketguru2468"
+                  href="https://www.youtube.com/@Sensvio-vq3kn"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-2 rounded-full bg-primary-pink px-5 py-3 text-sm font-semibold text-black transition hover:bg-pink-400"
@@ -1091,7 +1091,7 @@ function App() {
                   <h4 className="font-bold text-lg mb-3">Channel</h4>
                   <p className="text-gray-400 mb-4">Stock Market Guru — daily market updates, technical analysis, and stock trading insights.</p>
                   <a
-                    href="https://www.youtube.com/@stockmarketguru2468"
+                    href="https://www.youtube.com/@Sensvio-vq3kn"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-5 py-3 text-sm font-semibold text-white transition hover:bg-primary-pink hover:text-black"
