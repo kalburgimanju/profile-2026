@@ -933,7 +933,7 @@ function App() {
                 <h3 className="text-xl font-bold mb-4">Access granted</h3>
                 <p className="text-gray-400 mb-6">This course library is locked behind authentication so only logged-in learners can view the embedded YouTube content.</p>
                 <a
-                  href="https://www.youtube.com/@Sensvio-vq3kn"
+                  href="https://www.youtube.com/@stockmarketguru2468"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-2 rounded-full bg-primary-pink px-5 py-3 text-sm font-semibold text-black transition hover:bg-pink-400"
@@ -947,7 +947,7 @@ function App() {
               <div className="relative aspect-video w-full">
                 <iframe
                   className="absolute inset-0 h-full w-full"
-                  src="https://www.youtube.com/embed?listType=user_uploads&list=UCzwJoQ5HA7odetlvYY83-2w"
+                  src="https://www.youtube.com/embed/GEBE4dcQLYk?list=PLsWwm0hBMVk_LV0JMtzv5sdsT_CNNH460"
                   title="Stock Market Guru course playlist"
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                   allowFullScreen
@@ -957,6 +957,93 @@ function App() {
           </div>
         )}
       </section>
+
+              {/* Additional Playlists Section */}
+              <section id="extra-playlists" className="mb-32">
+                <div className="flex flex-col gap-4 mb-12">
+                  <div className="flex items-center gap-2">
+                    <Globe className="text-primary-blue" />
+                    <h3 className="text-2xl font-bold">Curated Playlists</h3>
+                  </div>
+                  <p className="max-w-3xl text-gray-400">
+                    Explore more curated playlists on trending tech, productivity, and creative skills.
+                  </p>
+                </div>
+                <div className="grid gap-6 lg:grid-cols-3">
+                  {/* Playlist 1 */}
+                  <div className="glass-card overflow-hidden border-white/5 flex flex-col">
+                    <div className="relative aspect-video w-full">
+                      <iframe
+                        className="absolute inset-0 h-full w-full"
+                        src="https://www.youtube.com/embed/8JdC1NmhTVU?list=PLqK5ZvEcjZ-wHXyggNHxWfvLksnwJTHfA"
+                        title="Focus Playlist"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowFullScreen
+                      />
+                    </div>
+                    <div className="p-4 flex-1 flex flex-col">
+                      <h4 className="font-bold text-lg mb-2">Focus</h4>
+                      <p className="text-gray-400 text-sm mb-2"></p>
+                      <a
+                        href="https://www.youtube.com/playlist?list=PLqK5ZvEcjZ-wHXyggNHxWfvLksnwJTHfA"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="mt-auto inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-semibold text-white transition hover:bg-primary-blue hover:text-black"
+                      >
+                        View Playlist
+                      </a>
+                    </div>
+                  </div>
+                  {/* Playlist 2 */}
+                  <div className="glass-card overflow-hidden border-white/5 flex flex-col">
+                    <div className="relative aspect-video w-full">
+                      <iframe
+                        className="absolute inset-0 h-full w-full"
+                        src="https://www.youtube.com/embed/CsSgg_iZHz4?list=PLqK5ZvEcjZ-wBTreBNAp9-o33roa59UMM"
+                        title="Tech Trends Playlist"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowFullScreen
+                      />
+                    </div>
+                    <div className="p-4 flex-1 flex flex-col">
+                      <h4 className="font-bold text-lg mb-2">Trends</h4>
+                      <p className="text-gray-400 text-sm mb-2"></p>
+                      <a
+                        href="https://www.youtube.com/playlist?list=PLqK5ZvEcjZ-wBTreBNAp9-o33roa59UMM"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="mt-auto inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-semibold text-white transition hover:bg-primary-blue hover:text-black"
+                      >
+                        View Playlist
+                      </a>
+                    </div>
+                  </div>
+                  {/* Playlist 3 */}
+                  <div className="glass-card overflow-hidden border-white/5 flex flex-col">
+                    <div className="relative aspect-video w-full">
+                      <iframe
+                        className="absolute inset-0 h-full w-full"
+                        src="https://www.youtube.com/embed/pRpeEdMmmQ0?list=PLqK5ZvEcjZ-xtdx5rRyUzxspHfC2_GQjZ"
+                        title="my zumba/dance playlist"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowFullScreen
+                      />
+                    </div>
+                    <div className="p-4 flex-1 flex flex-col">
+                      <h4 className="font-bold text-lg mb-2">my zumba/dance playlist</h4>
+                      <p className="text-gray-400 text-sm mb-2">Unlock your creativity with tutorials and inspiration for design, music, and more.</p>
+                      <a
+                        href="https://www.youtube.com/playlist?list=PLqK5ZvEcjZ-xtdx5rRyUzxspHfC2_GQjZ"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="mt-auto inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-semibold text-white transition hover:bg-primary-blue hover:text-black"
+                      >
+                        View Playlist
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </section>
     </main>
   )
 
@@ -1074,38 +1161,69 @@ function App() {
                 Explore the latest video insights from my YouTube channel, focused on stock market strategy, trader education, and market analysis.
               </p>
             </div>
-            <div className="grid gap-6 lg:grid-cols-[2fr_1fr]">
+            <div className="grid gap-6 lg:grid-cols-2">
+              {/* Stock Market Channel */}
               <div className="glass-card overflow-hidden border-white/5">
                 <div className="relative aspect-video w-full">
                   <iframe
                     className="absolute inset-0 h-full w-full"
-                    src="https://www.youtube.com/embed?listType=user_uploads&list=UCzwJoQ5HA7odetlvYY83-2w"
+                    src="https://www.youtube.com/embed/GEBE4dcQLYk?list=PLsWwm0hBMVk_LV0JMtzv5sdsT_CNNH460"
                     title="Stock Market Guru YouTube Channel Videos"
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                     allowFullScreen
                   />
                 </div>
-              </div>
-              <div className="space-y-4">
-                <div className="glass-card p-6 border-white/5">
-                  <h4 className="font-bold text-lg mb-3">Channel</h4>
-                  <p className="text-gray-400 mb-4">Stock Market Guru — daily market updates, technical analysis, and stock trading insights.</p>
+                <div className="p-6">
+                  <h4 className="font-bold text-lg mb-3">Stock Market Guru</h4>
+                  <p className="text-gray-400 mb-4">Daily market updates, technical analysis, and stock trading insights.</p>
                   <a
-                    href="https://www.youtube.com/@Sensvio-vq3kn"
+                    href="https://www.youtube.com/@stockmarketguru2468"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-5 py-3 text-sm font-semibold text-white transition hover:bg-primary-pink hover:text-black"
                   >
                     Visit Channel
                   </a>
+                  <div className="mt-4">
+                    <h5 className="font-semibold mb-2">What you’ll find</h5>
+                    <ul className="space-y-2 text-gray-400 list-disc list-inside text-sm">
+                      <li>Stock market strategy and trading psychology</li>
+                      <li>Live chart analysis and breakout reviews</li>
+                      <li>Actionable insights on momentum, volume, and risk</li>
+                    </ul>
+                  </div>
                 </div>
-                <div className="glass-card p-6 border-white/5">
-                  <h4 className="font-bold text-lg mb-3">What you’ll find</h4>
-                  <ul className="space-y-3 text-gray-400 list-disc list-inside">
-                    <li>Stock market strategy and trading psychology</li>
-                    <li>Live chart analysis and breakout reviews</li>
-                    <li>Actionable insights on momentum, volume, and risk</li>
-                  </ul>
+              </div>
+              {/* AI Channel */}
+              <div className="glass-card overflow-hidden border-white/5">
+                <div className="relative aspect-video w-full">
+                  <iframe
+                    className="absolute inset-0 h-full w-full"
+                    src="https://www.youtube.com/embed/peSfcy9woDM?list=PLsWwm0hBMVk_lJ5qVOVTACkpZj7esa8d9"
+                    title="AI & Machine Learning Playlist"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                  />
+                </div>
+                <div className="p-6">
+                  <h4 className="font-bold text-lg mb-3">AI & Machine Learning</h4>
+                  <p className="text-gray-400 mb-4">Explore the latest in AI, machine learning, and deep learning with hands-on tutorials and project walkthroughs.</p>
+                  <a
+                    href="https://www.youtube.com/@Sensvio-vq3kn"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-5 py-3 text-sm font-semibold text-white transition hover:bg-primary-pink hover:text-black"
+                  >
+                    Visit AI Channel
+                  </a>
+                  <div className="mt-4">
+                    <h5 className="font-semibold mb-2">What you’ll find</h5>
+                    <ul className="space-y-2 text-gray-400 list-disc list-inside text-sm">
+                      <li>AI and machine learning fundamentals</li>
+                      <li>Deep learning project walkthroughs</li>
+                      <li>Practical coding tutorials and demos</li>
+                    </ul>
+                  </div>
                 </div>
               </div>
             </div>
