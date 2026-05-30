@@ -63,18 +63,195 @@ const skills = [
   "Tailwind CSS", "Micro Frontends", "Cloud-Native UI", "GCP / Azure", "GraphQL"
 ]
 
+const aiTools = [
+  "OpenAI",
+  "Google Gemini",
+  "LangChain.js",
+  "NotebookLM",
+  "ChatGPT",
+  "Accio",
+  "CrewAI",
+  "Augment",
+  "Prompt Engineering",
+  "RAG",
+  "LLM orchestration",
+  "Agentic AI workflows"
+]
+
 const experience = [
-  { company: "Altimetrik", role: "Senior Staff Engineer", period: "2025 - Present" },
-  { company: "ACEGEN", role: "Frontend Developer L3", period: "2024 - 2025" },
-  { company: "Neozoom", role: "React Lead", period: "2024" },
-  { company: "BCforward", role: "Technical Architect", period: "2022 - 2023" },
-  { company: "Honeywell", role: "Tech Lead", period: "2014 - 2019" }
+  {
+    company: "Altimetrik",
+    role: "Senior Staff Engineer",
+    client: "Wex",
+    period: "Aug 2025 - Present",
+    location: "Bangalore, India",
+    points: [
+      "Owned delivery of core platform components end-to-end while collaborating with multiple consumer teams and subsystems.",
+      "Architected frontend and integration layers using React, TypeScript, GraphQL, and micro frontends to build reusable UI frameworks and platform components.",
+      "Integrated platform services with backend and external systems, defining contracts, observability, and error-handling patterns for LLM-driven workflows.",
+      "Produced technical runbooks, architecture diagrams, and implementation documentation to support handover and production readiness.",
+      "Drove GenAI-assisted development workflows using NotebookLM, Gemini, ChatGPT, Augment, Accio, and CrewAI to speed documentation, code reviews, and quality checks."
+    ]
+  },
+  {
+    company: "Express.com",
+    role: "Frontend Developer - Level 3",
+    client: "Aries Technology Solutions / AECGEN Infotech Pvt Ltd",
+    period: "Aug 2024 - Jan 2025",
+    location: "Bangalore, India",
+    points: [
+      "Architected a ReactJS-based UI and NodeJS/NextJS/Redux component library with SCSS and Styled Components to streamline front-end development across 15+ applications.",
+      "Built automated GraphQL-powered APIs to migrate assets from AEM to Cloudinary, reducing operations effort by 40%.",
+      "Integrated GCP services and cloud monitoring, delivering WCAG-compliant interfaces with SEO, performance, and security optimizations.",
+      "Led code reviews and achieved near-100% test coverage using React Testing Library, mentoring developers and improving efficiency by 30%.",
+      "Managed CI/CD pipelines and cloud deployments using Jenkins, GCP, AWS, Cloudinary, and S3 Storage."
+    ]
+  },
+  {
+    company: "SWANFORLIFE",
+    role: "React Lead | Frontend Architect",
+    client: "NeoZoom Technology Pvt Ltd",
+    period: "Mar 2024 - Jun 2024",
+    location: "Bangalore, India",
+    points: [
+      "Designed a modular front-end framework using React.js and Redux to support scalable development.",
+      "Translated Figma designs into responsive, WCAG-compliant interfaces using CSS3 and TypeScript.",
+      "Developed AI-powered agents to auto-convert Figma designs into ReactJS components, reducing manual UI development effort by 50%.",
+      "Improved agile velocity by 20% through effective sprint management and collaboration.",
+      "Integrated RESTful APIs and maintained component state using Redux and microservices while tuning Webpack and GCP deployment practices."
+    ]
+  },
+  {
+    company: "Salesforce Core - LWC Platform",
+    role: "Technical Architect",
+    client: "BCForward",
+    period: "Oct 2022 - Oct 2023",
+    location: "Bangalore, India",
+    points: [
+      "Created a React and Redux component library as Lightning Design Systems (LWC) for enterprise apps.",
+      "Developed AI-powered agents to auto-convert Figma designs into React components, accelerating UI development by 50%.",
+      "Reduced UI development time by 30% using Storybook-driven development.",
+      "Improved accessibility compliance across enterprise applications to WCAG 2.1 AA standards.",
+      "Monitored CI/CD pipelines and cloud deployments using GitHub Actions."
+    ]
+  },
+  {
+    company: "Sensvio",
+    role: "Software Consultant",
+    client: "Sensvio",
+    period: "Aug 2021 - Aug 2022",
+    location: "Hubli, India",
+    points: [
+      "Designed, developed, and optimized responsive web applications using React.js, React Native, Redux, Node.js, and MongoDB, improving page load performance by 35%.",
+      "Implemented serverless solutions using Google APIs and Airtable to improve scalability and reduce infrastructure costs.",
+      "Monitored CI/CD pipelines and cloud deployments using Jenkins.",
+      "Designed and deployed OpenAI GPT-4 agents that convert voice inputs into interactive learning lessons for children.",
+      "Built agentic AI workflows for personalized content generation using prompt templates, multi-step tool invocations, logging, and fallback strategies.",
+      "Defined test scenarios and manual evaluation checklists to validate AI outputs prior to production release."
+    ]
+  },
+  {
+    company: "Honeywell Technology Solutions Lab",
+    role: "Technical Architect",
+    client: "Quess Corp",
+    period: "Nov 2020 - Aug 2021",
+    location: "Bangalore, India",
+    points: [
+      "Architected cloud-based security management platforms using React.js, Redux, Jenkins, Node.js, and micro frontend architecture.",
+      "Led Agile sprints and retrospectives, boosting team efficiency by 25%.",
+      "Conducted UI testing using Jest and Karma with 98% test coverage.",
+      "Set up and monitored CI/CD pipelines and cloud deployments using Azure DevOps and Jenkins.",
+      "Worked on the Niagara Honeywell product stack."
+    ]
+  },
+  {
+    company: "Oracle Clinical Trials Platform",
+    role: "Technical Lead",
+    client: "Pure Software / Oracle",
+    period: "Nov 2019 - Aug 2020",
+    location: "Bangalore, India",
+    points: [
+      "Built UI components for a clinical trials platform used in COVID-19 research, migrating a legacy KnockoutJS system to React.js and Redux.",
+      "Implemented automated testing with Selenium and Jest, increasing release stability by 30%.",
+      "Set up and monitored CI/CD pipelines and cloud deployments using Oracle Cloud and Jenkins.",
+      "Collaborated with product and domain experts to translate clinical requirements into robust, testable UX workflows."
+    ]
+  },
+  {
+    company: "Honeywell Technology Solutions Lab",
+    role: "Tech Lead",
+    period: "Oct 2013 - Sept 2019",
+    location: "Bangalore, India",
+    points: [
+      "Led frontend development using HTML5, CSS3, Bootstrap, LESS, TypeScript, ES6, React 16, KnockoutJS, Redux, D3.js, WebSocket, and HighCharts across micro frontend services.",
+      "Migrated tech stacks from KnockoutJS to Angular 4/6 and modernized the UI layer with ReactJS.",
+      "Transformed PSD designs into responsive, W3C-compliant, accessible user interfaces.",
+      "Owned end-to-end delivery across platforms including Maxpro Cloud, MPC, RAMS, Eagle, BMS, and ISOM Web Portal.",
+      "Enabled CI/CD pipelines with Git and Jenkins while mentoring UI/UX teams and standardizing design systems."
+    ]
+  },
+  {
+    company: "3M India",
+    role: "Junior Programmer",
+    client: "EDC Creative Technology",
+    period: "Sep 2011 - Sept 2013",
+    location: "Bangalore, India",
+    points: [
+      "Led product management for global B2B and B2C website development, performance optimization, and feature enhancements.",
+      "Directed website design strategy to maintain a consistent, modern visual experience aligned with brand guidelines.",
+      "Coordinated stakeholders, vendors, and cross-functional teams to deliver website design, content, and infrastructure improvements.",
+      "Managed digital metrics, SEO, and social media coordination while ensuring quality execution for 3mindia.com, post-it.com, and scotchbrite.com." 
+    ]
+  },
+  {
+    company: "Savithru Technology",
+    role: "Software Engineer",
+    client: "Globals Inc",
+    period: "Mar 2011 - Aug 2011",
+    location: "Bangalore, India",
+    points: [
+      "Developed high-traffic e-commerce web applications using PHP, Symfony, MySQL, JavaScript, WordPress, Magento, jQuery, and AJAX."
+    ]
+  },
+  {
+    company: "Globals Inc",
+    role: "Trainee Software Engineer",
+    period: "Aug 2010 - Mar 2011",
+    location: "Bangalore, India",
+    points: [
+      "Built and maintained healthcare web applications using PHP, MySQL, Joomla, and MediaWiki."
+    ]
+  }
 ]
 
 const certificates = [
-  { name: "GenAI ASCEND - AI Aware", org: "Coursera", date: "2024" },
-  { name: "GenAI for Everyone", org: "Coursera", date: "2024" },
-  { name: "Responsible AI", org: "Google Cloud", date: "2023" }
+  { name: "Six Sigma Green Belt" },
+  { name: "Design for Six Sigma (DFSS) Core" },
+  { name: "AI Agents Bootcamp: Build with LangChain, RAG & ANY LLM", org: "Agentic AI" },
+  { name: "Enterprise Design Thinking - Team Essentials for AI", org: "IBM" },
+  { name: "Honeywell User Experience" },
+  { name: "Scrum Fundamentals Certified (SFC™)" },
+  { name: "Achieving an Agile Mindset", org: "ICAgile", url: "https://app.pluralsight.com/library/courses/achieving-agile-mindset-icagile" },
+  { name: "Executive Certification in Business Management", org: "Madras Management Association" },
+  { name: "Enterprise Architecture Foundations" },
+  { name: "Clean Architecture: Patterns, Practices, and Principles", url: "https://app.pluralsight.com/library/courses/clean-architecture-patterns-practices-principles" },
+  { name: "Getting Started with Salesforce Lightning Web Components" },
+  { name: "Introduction to Salesforce Certified Platform Developer I" },
+  { name: "UX Accessibility & Figma Essential Training: The Basics" },
+  { name: "React 18 Fundamentals" },
+  { name: "Next.js 13 Fundamentals", url: "https://app.pluralsight.com/library/courses/nextjs-13-fundamentals" },
+  { name: "TailwindCSS 3 Fundamentals", url: "https://app.pluralsight.com/library/courses/tailwind-css-3-fundamentals" },
+  { name: "Building Web Applications with Node.js and Express", url: "https://app.pluralsight.com/library/courses/nodejs-express-web-applications-building" },
+  { name: "Adobe Experience Manager (AEM)" },
+  { name: "Adobe Experience Manager: Make Basics, Foundation, Intermediate, and Advanced" },
+  { name: "Figma: Handing off to Developers" },
+  { name: "Cloudinary Advanced Concepts for Developers" },
+  { name: "Cloudinary Partner Implementation Advanced" },
+  { name: "Cloudinary Foundations" },
+  { name: "Cloudinary Integration Foundations" },
+  { name: "Cloudinary Client Collaboration" },
+  { name: "Cloudinary Media Developer Master" },
+  { name: "Understanding the Fast API" }
 ]
 
 const youtubeCourses = [
@@ -364,7 +541,6 @@ function App() {
     setMediaItems(storedMedia)
     if (persistedUser) {
       setUser(persistedUser)
-      setActivePage('courses')
     }
   }, [])
 
@@ -1113,6 +1289,28 @@ function App() {
                   className="glass-card p-4 flex items-center justify-center text-center font-medium border-white/5"
                 >
                   {skill}
+                </motion.div>
+              ))}
+            </div>
+          </section>
+
+          {/* AI Tools */}
+          <section id="ai-tools" className="mb-32">
+            <div className="flex items-center gap-2 mb-12">
+              <Terminal className="text-primary-pink" />
+              <h3 className="text-2xl font-bold">AI Tools & Platforms</h3>
+            </div>
+            <p className="max-w-3xl text-gray-400 mb-8">
+              Tools and platforms I use to build and deploy intelligent AI workflows, agentic systems, and LLM-powered products.
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+              {aiTools.map((tool, index) => (
+                <motion.div
+                  key={index}
+                  whileHover={{ scale: 1.05 }}
+                  className="glass-card p-5 flex items-center justify-center text-center font-medium border-white/5"
+                >
+                  {tool}
                 </motion.div>
               ))}
             </div>
