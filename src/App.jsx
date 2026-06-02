@@ -274,6 +274,7 @@ const menuItems = [
   { label: "Skills", href: "#skills", page: "home" },
   { label: "Projects", href: "#projects", page: "home" },
   { label: "Videos", href: "#videos", page: "home" },
+  { label: "Articles", href: "#articles", page: "home" },
   { label: "Courses", href: "#courses", page: "courses" },
   { label: "Experience", href: "#experience", page: "home" },
   { label: "Certifications", href: "#certificates", page: "home" }
@@ -306,6 +307,9 @@ function App() {
   const [ffmpegInstance, setFfmpegInstance] = useState(null)
   const [ffmpegLoading, setFfmpegLoading] = useState(false)
   const videoRef = useRef(null)
+  const [articles, setArticles] = useState([])
+  const [articlesLoading, setArticlesLoading] = useState(false)
+  const [articlesError, setArticlesError] = useState('')
 
   const getMediaDuration = (file, type) => {
     return new Promise((resolve) => {
@@ -542,6 +546,39 @@ function App() {
     if (persistedUser) {
       setUser(persistedUser)
     }
+  }, [])
+
+  useEffect(() => {
+    const fetchArticles = async () => {
+      try {
+        setArticlesLoading(true)
+        setArticlesError('')
+        const feedUrl = 'https://medium.com/feed/@kalburgimanjunath'
+        const rssApiUrl = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(feedUrl)}`
+        const res = await fetch(rssApiUrl)
+        if (!res.ok) throw new Error('Unable to fetch feed')
+        const data = await res.json()
+        if (data.status === 'error') throw new Error(data.message || 'RSS API error')
+        const items = (data.items || []).slice(0, 10).map((item) => {
+          const description = item.content || item.description || ''
+          const cleanDesc = description.replace(/<[^>]*>/g, '').substring(0, 150)
+          return {
+            title: item.title || '',
+            link: item.link || '',
+            pubDate: item.pubDate || '',
+            description: cleanDesc
+          }
+        })
+        setArticles(items)
+      } catch (err) {
+        console.error('Articles fetch error:', err)
+        setArticlesError(err?.message || 'Failed to load articles')
+      } finally {
+        setArticlesLoading(false)
+      }
+    }
+
+    fetchArticles()
   }, [])
 
   useEffect(() => {
@@ -1273,6 +1310,43 @@ function App() {
                 <button className="w-full sm:w-auto border border-white/20 px-8 py-3 rounded-full font-bold hover:bg-white/10 transition-all">Contact Me</button>
               </div>
             </motion.div>
+          </section>
+
+          {/* Articles Section */}
+          <section id="articles" className="mb-32">
+            <div className="flex flex-col gap-4 mb-12">
+              <div className="flex items-center gap-2">
+                <Mail className="text-primary-pink" />
+                <h3 className="text-2xl font-bold">Articles</h3>
+              </div>
+              <p className="max-w-3xl text-gray-400">
+                Latest articles from my Medium blog. Click an item to read the full post on Medium.
+              </p>
+            </div>
+
+            {articlesLoading ? (
+              <p className="text-gray-400">Loading latest articles…</p>
+            ) : articlesError ? (
+              <p className="text-red-400">Unable to load articles: {articlesError}</p>
+            ) : (
+              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                {articles.map((a, idx) => (
+                  <div key={idx} className="glass-card p-6 border-white/5">
+                    <h4 className="font-semibold text-lg mb-2 text-white">{a.title}</h4>
+                    <p className="text-xs text-gray-500 mb-3">{a.pubDate && new Date(a.pubDate).toLocaleDateString()}</p>
+                    <p className="text-gray-400 text-sm mb-4 line-clamp-3" dangerouslySetInnerHTML={{ __html: a.description }} />
+                    <a
+                      href={a.link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-semibold text-white transition hover:bg-primary-pink hover:text-black"
+                    >
+                      Read on Medium
+                    </a>
+                  </div>
+                ))}
+              </div>
+            )}
           </section>
 
           {/* Skills Bento Grid */}
