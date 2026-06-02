@@ -9,6 +9,7 @@ import {
   Award,
   Terminal
 } from 'lucide-react'
+import ArticleDetailPage from './pages/ArticleDetailPage'
 
 const demoUser = {
   username: 'demo',
@@ -308,6 +309,7 @@ function App() {
   const [ffmpegLoading, setFfmpegLoading] = useState(false)
   const videoRef = useRef(null)
   const [articles, setArticles] = useState([])
+  const [selectedArticle, setSelectedArticle] = useState(null)
   const [articlesLoading, setArticlesLoading] = useState(false)
   const [articlesError, setArticlesError] = useState('')
 
@@ -560,13 +562,16 @@ function App() {
         const data = await res.json()
         if (data.status === 'error') throw new Error(data.message || 'RSS API error')
         const items = (data.items || []).slice(0, 10).map((item) => {
-          const description = item.content || item.description || ''
-          const cleanDesc = description.replace(/<[^>]*>/g, '').substring(0, 150)
+          const fullDescription = item.content || item.description || ''
+          const cleanDesc = fullDescription.replace(/<[^>]*>/g, '').substring(0, 150)
+          const cleanFullDesc = fullDescription.replace(/<[^>]*>/g, '')
           return {
             title: item.title || '',
             link: item.link || '',
             pubDate: item.pubDate || '',
-            description: cleanDesc
+            description: cleanDesc,
+            fullDescription: cleanFullDesc,
+            content: item.content || item.description || ''
           }
         })
         setArticles(items)
@@ -1287,7 +1292,12 @@ function App() {
         </div>
       </nav>
 
-      {activePage === 'courses' ? (
+      {selectedArticle ? (
+        <ArticleDetailPage
+          article={selectedArticle}
+          onBack={() => setSelectedArticle(null)}
+        />
+      ) : activePage === 'courses' ? (
         coursesPage
       ) : (
         <main className="max-w-7xl mx-auto px-6 pt-32 pb-20">
@@ -1331,19 +1341,18 @@ function App() {
             ) : (
               <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                 {articles.map((a, idx) => (
-                  <div key={idx} className="glass-card p-6 border-white/5">
-                    <h4 className="font-semibold text-lg mb-2 text-white">{a.title}</h4>
+                  <button
+                    key={idx}
+                    onClick={() => setSelectedArticle(a)}
+                    className="glass-card p-6 border-white/5 text-left hover:border-primary-pink/50 transition-all hover:scale-105"
+                  >
+                    <h4 className="font-semibold text-lg mb-2 text-white hover:text-primary-pink transition-colors">{a.title}</h4>
                     <p className="text-xs text-gray-500 mb-3">{a.pubDate && new Date(a.pubDate).toLocaleDateString()}</p>
                     <p className="text-gray-400 text-sm mb-4 line-clamp-3" dangerouslySetInnerHTML={{ __html: a.description }} />
-                    <a
-                      href={a.link}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-semibold text-white transition hover:bg-primary-pink hover:text-black"
-                    >
-                      Read on Medium
-                    </a>
-                  </div>
+                    <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-semibold text-white transition hover:bg-primary-pink hover:text-black">
+                      View Article
+                    </div>
+                  </button>
                 ))}
               </div>
             )}
