@@ -9,6 +9,7 @@ import {
   Award,
   Terminal
 } from 'lucide-react'
+import SystemDesignPage from './pages/SystemDesignPage'
 import ArticleDetailPage from './pages/ArticleDetailPage'
 
 const demoUser = {
@@ -276,6 +277,7 @@ const menuItems = [
   { label: "Projects", href: "#projects", page: "home" },
   { label: "Videos", href: "#videos", page: "home" },
   { label: "Articles", href: "#articles", page: "home" },
+  { label: "System Design", href: "#system-design", page: "system-design" },
   { label: "Courses", href: "#courses", page: "courses" },
   { label: "Experience", href: "#experience", page: "home" },
   { label: "Certifications", href: "#certificates", page: "home" }
@@ -603,12 +605,8 @@ function App() {
   }, [user])
 
   const handleNavClick = (item, event) => {
-    if (item.page === 'courses') {
-      event.preventDefault()
-      setActivePage('courses')
-    } else {
-      setActivePage('home')
-    }
+    event.preventDefault()
+    setActivePage(item.page || 'home')
   }
 
   const handleLogin = (event) => {
@@ -1265,6 +1263,10 @@ function App() {
     </main>
   )
 
+  const systemDesignPage = (
+    <SystemDesignPage articles={articles} />
+  )
+
   return (
     <div className="min-h-screen selection:bg-primary-pink selection:text-white">
       {/* Navigation */}
@@ -1299,6 +1301,8 @@ function App() {
         />
       ) : activePage === 'courses' ? (
         coursesPage
+      ) : activePage === 'system-design' ? (
+        systemDesignPage
       ) : (
         <main className="max-w-7xl mx-auto px-6 pt-32 pb-20">
           {/* Hero Section */}
