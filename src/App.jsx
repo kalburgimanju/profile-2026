@@ -607,6 +607,15 @@ function App() {
   const handleNavClick = (item, event) => {
     event.preventDefault()
     setActivePage(item.page || 'home')
+    
+    if (item.href && item.href.startsWith('#')) {
+      setTimeout(() => {
+        const el = document.querySelector(item.href)
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth' })
+        }
+      }, 100)
+    }
   }
 
   const handleLogin = (event) => {
